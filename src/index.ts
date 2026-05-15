@@ -31,8 +31,12 @@ const run = async (): Promise<void> => {
     if (!postResult.ok) {
       console.error(`Report ingestion failed with status ${postResult.status}`);
       console.error(`Report ingestion request: ${postResult.method} ${postResult.url}`);
-      console.error("Report ingestion response body:");
-      console.error(postResult.body);
+      if (Object.keys(postResult.headers).length > 0) {
+        console.error("Report ingestion response headers:");
+        console.error(postResult.headers);
+      }
+      console.error("Report ingestion response body text:");
+      console.error(postResult.bodyText);
       process.exitCode = 1;
       return;
     }
