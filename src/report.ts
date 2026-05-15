@@ -1,4 +1,4 @@
-import type { CheckResult, MonitoringReport } from "./types";
+import type { CheckResult, MonitoringReport, ReportStatus } from "./types";
 
 const aggregateTotals = (checks: CheckResult[]) => {
   return checks.reduce(
@@ -14,11 +14,16 @@ const aggregateTotals = (checks: CheckResult[]) => {
 };
 
 export const buildReport = (checks: CheckResult[]): MonitoringReport => {
+  const totals = aggregateTotals(checks);
+  const status: ReportStatus =
+    totals.failed > 0 ? "FAILED" : totals.warning > 0 ? "WARNING" : "OK";
+
   return {
     generatedAt: new Date().toISOString(),
     environment: "production",
+    status,
     checks,
-    totals: aggregateTotals(checks)
+    totals
   };
 };
 

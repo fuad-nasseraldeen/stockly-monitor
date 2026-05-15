@@ -17,6 +17,12 @@ const toBodyText = (value: unknown): string => {
   }
 };
 
+const toApiStatus = (status: string): "OK" | "WARNING" | "FAILED" => {
+  if (status === "FAILED") return "FAILED";
+  if (status === "WARNING") return "WARNING";
+  return "OK";
+};
+
 export const postMonitoringReport = async (
   client: AxiosInstance,
   monitoringIngestSecret: string,
@@ -36,13 +42,25 @@ export const postMonitoringReport = async (
   const normalizedPath = `/${monitoringReportPath.replace(/^\/+/, "")}`;
   const baseURL = (client.defaults.baseURL ?? "").replace(/\/+$/, "");
   const url = `${baseURL}${normalizedPath}`;
+  const apiReport = {
+    ...report,
+    status: toApiStatus(report.status),
+    checks: report.checks.map((check) => ({
+      ...check,
+      status: toApiStatus(check.status)
+    }))
+  };
 
   console.log(`Report ingestion method: ${method}`);
   console.log(`Report ingestion STOCKLY_API_URL: ${baseURL}`);
   console.log(`Report ingestion path: ${normalizedPath}`);
   console.log(`Report ingestion URL: ${url}`);
+  console.log(`Report payload top-level status: ${apiReport.status}`);
+  console.log(
+    `Report payload check statuses: ${Array.from(new Set(apiReport.checks.map((check) => check.status))).join(", ")}`
+  );
 
-  const response = await client.post(normalizedPath, report, {
+  const response = await client.post(normalizedPath, apiReport, {
     headers: {
       "x-monitoring-secret": monitoringIngestSecret
     }

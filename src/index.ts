@@ -20,6 +20,7 @@ const run = async (): Promise<void> => {
 
   const report = buildReport(checks);
   printSummary(report);
+  console.log(`Report top-level status: ${report.status}`);
 
   try {
     const postResult = await postMonitoringReport(
