@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { getConfig } from "./config";
 import { createHttpClient } from "./http";
 import { runApiChecks, runOptionalAuthCheck } from "./checks/apiChecks";
@@ -21,9 +22,17 @@ const run = async (): Promise<void> => {
   printSummary(report);
 
   try {
-    const postResult = await postMonitoringReport(client, config.monitoringIngestSecret, report);
+    const postResult = await postMonitoringReport(
+      client,
+      config.monitoringIngestSecret,
+      config.monitoringReportPath,
+      report
+    );
     if (!postResult.ok) {
       console.error(`Report ingestion failed with status ${postResult.status}`);
+      console.error(`Report ingestion request: ${postResult.method} ${postResult.url}`);
+      console.error("Report ingestion response body:");
+      console.error(postResult.body);
       process.exitCode = 1;
       return;
     }
