@@ -59,8 +59,6 @@ export const postMonitoringReport = async (
   console.log(
     `Report payload check statuses: ${Array.from(new Set(apiReport.checks.map((check) => check.status))).join(", ")}`
   );
-  console.log("Report payload JSON (debug):");
-  console.log(JSON.stringify(apiReport, null, 2));
 
   try {
     const response = await client.post(normalizedPath, apiReport, {

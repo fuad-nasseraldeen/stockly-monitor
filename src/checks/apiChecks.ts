@@ -69,32 +69,73 @@ const safeCountFromBody = (body: unknown): number | undefined => {
   return undefined;
 };
 
-export const runApiChecks = async (client: AxiosInstance): Promise<CheckResult[]> => {
-  return Promise.all([
-    timedRequest("products-list", "DATA", async () => {
-      const response = await client.get("/products");
-      return { status: response.status, data: response.data };
-    }),
-    timedRequest("suppliers-list", "DATA", async () => {
-      const response = await client.get("/suppliers");
-      return { status: response.status, data: response.data };
-    }),
-    timedRequest("categories-list", "DATA", async () => {
-      const response = await client.get("/categories");
-      return { status: response.status, data: response.data };
-    }),
-    timedRequest("dashboard-health", "API", async () => {
-      const response = await client.get("/health");
-      return { status: response.status, data: response.data };
-    })
-  ]);
-};
-
 interface AuthInput {
   email?: string;
   password?: string;
   token?: string;
 }
+
+const withAuthHeader = (token?: string): { headers?: Record<string, string> } | undefined => {
+  if (!token) return undefined;
+  return { headers: { Authorization: `Bearer ${token}` } };
+};
+
+const baseUrlFromClient = (client: AxiosInstance): string => {
+  return (client.defaults.baseURL ?? "").replace(/\/+$/, "");
+};
+
+const checkWithUrlLog = async (
+  client: AxiosInstance,
+  name: string,
+  type: CheckType,
+  path: string,
+  token?: string
+): Promise<CheckResult> => {
+  console.log(`Checking URL: ${baseUrlFromClient(client)}${path}`);
+  return timedRequest(name, type, async () => {
+    const response = await client.get(path, withAuthHeader(token));
+    return { status: response.status, data: response.data };
+  });
+};
+
+const checkWithPublicFallback = async (
+  client: AxiosInstance,
+  name: string,
+  type: CheckType,
+  protectedPath: string
+): Promise<CheckResult> => {
+  const fallbackPath = "/health";
+  console.log(`Checking URL: ${baseUrlFromClient(client)}${fallbackPath}`);
+  return timedRequest(name, type, async () => {
+    const response = await client.get(fallbackPath);
+    return {
+      status: response.status,
+      data: {
+        fallback: true,
+        fallbackPath,
+        protectedPath,
+        response: response.data
+      }
+    };
+  });
+};
+
+export const runApiChecks = async (client: AxiosInstance, authInput?: AuthInput): Promise<CheckResult[]> => {
+  const hasToken = Boolean(authInput?.token);
+
+  return Promise.all([
+    hasToken
+      ? checkWithUrlLog(client, "products-list", "DATA", "/api/products", authInput?.token)
+      : checkWithPublicFallback(client, "products-list", "DATA", "/api/products"),
+    hasToken
+      ? checkWithUrlLog(client, "suppliers-list", "DATA", "/api/suppliers", authInput?.token)
+      : checkWithPublicFallback(client, "suppliers-list", "DATA", "/api/suppliers"),
+    hasToken
+      ? checkWithUrlLog(client, "categories-list", "DATA", "/api/categories", authInput?.token)
+      : checkWithPublicFallback(client, "categories-list", "DATA", "/api/categories"),
+    checkWithUrlLog(client, "dashboard-health", "API", "/health")
+  ]);
+};
 
 export const runOptionalAuthCheck = async (
   client: AxiosInstance,

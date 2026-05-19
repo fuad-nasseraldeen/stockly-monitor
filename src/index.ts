@@ -9,12 +9,14 @@ const run = async (): Promise<void> => {
   const config = getConfig();
   const client = createHttpClient(config.stocklyApiUrl);
 
-  const checks = await runApiChecks(client);
-  const authCheck = await runOptionalAuthCheck(client, {
+  const authInput = {
     email: config.testAdminEmail,
     password: config.testAdminPassword,
     token: config.testAdminToken
-  });
+  };
+
+  const checks = await runApiChecks(client, authInput);
+  const authCheck = await runOptionalAuthCheck(client, authInput);
 
   checks.push(authCheck);
 
