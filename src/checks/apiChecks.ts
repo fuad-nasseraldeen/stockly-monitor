@@ -98,36 +98,14 @@ const checkWithUrlLog = async (
   });
 };
 
-const monitoringHeader = (monitoringIngestSecret: string): Record<string, string> => {
-  return { "x-monitoring-secret": monitoringIngestSecret };
-};
-
 export const runApiChecks = async (
   client: AxiosInstance,
-  monitoringIngestSecret: string
+  authInput: AuthInput
 ): Promise<CheckResult[]> => {
   return Promise.all([
-    checkWithUrlLog(
-      client,
-      "products-list",
-      "DATA",
-      "/admin/monitoring/health/products",
-      monitoringHeader(monitoringIngestSecret)
-    ),
-    checkWithUrlLog(
-      client,
-      "suppliers-list",
-      "DATA",
-      "/admin/monitoring/health/suppliers",
-      monitoringHeader(monitoringIngestSecret)
-    ),
-    checkWithUrlLog(
-      client,
-      "categories-list",
-      "DATA",
-      "/admin/monitoring/health/categories",
-      monitoringHeader(monitoringIngestSecret)
-    ),
+    checkWithUrlLog(client, "products-list", "DATA", "/api/products", withAuthHeader(authInput.token)?.headers),
+    checkWithUrlLog(client, "suppliers-list", "DATA", "/api/suppliers", withAuthHeader(authInput.token)?.headers),
+    checkWithUrlLog(client, "categories-list", "DATA", "/api/categories", withAuthHeader(authInput.token)?.headers),
     checkWithUrlLog(client, "dashboard-health", "API", "/health")
   ]);
 };

@@ -51,14 +51,7 @@ export const postMonitoringReport = async (
     }))
   };
 
-  console.log(`Report ingestion method: ${method}`);
-  console.log(`Report ingestion STOCKLY_API_URL: ${baseURL}`);
-  console.log(`Report ingestion path: ${normalizedPath}`);
   console.log(`Report ingestion URL: ${url}`);
-  console.log(`Report payload top-level status: ${apiReport.status}`);
-  console.log(
-    `Report payload check statuses: ${Array.from(new Set(apiReport.checks.map((check) => check.status))).join(", ")}`
-  );
 
   try {
     const response = await client.post(normalizedPath, apiReport, {
@@ -88,8 +81,7 @@ export const postMonitoringReport = async (
       method
     };
   } catch (error) {
-    console.error("Report ingestion request failed");
-    console.error(`Report ingestion URL: ${url}`);
+    console.error(`Report ingestion failed for URL: ${url}`);
 
     if (isAxiosError(error)) {
       if (error.response) {

@@ -15,14 +15,13 @@ const run = async (): Promise<void> => {
     token: config.testAdminToken
   };
 
-  const checks = await runApiChecks(client, config.monitoringIngestSecret);
+  const checks = await runApiChecks(client, authInput);
   const authCheck = await runOptionalAuthCheck(client, authInput);
 
   checks.push(authCheck);
 
   const report = buildReport(checks);
   printSummary(report);
-  console.log(`Report top-level status: ${report.status}`);
 
   try {
     const postResult = await postMonitoringReport(
@@ -33,13 +32,6 @@ const run = async (): Promise<void> => {
     );
     if (!postResult.ok) {
       console.error(`Report ingestion failed with status ${postResult.status}`);
-      console.error(`Report ingestion request: ${postResult.method} ${postResult.url}`);
-      if (Object.keys(postResult.headers).length > 0) {
-        console.error("Report ingestion response headers:");
-        console.error(postResult.headers);
-      }
-      console.error("Report ingestion response body text:");
-      console.error(postResult.bodyText);
       process.exitCode = 1;
       return;
     }
