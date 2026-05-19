@@ -29,6 +29,10 @@ jobs:
         env:
           STOCKLY_API_URL: ${{ secrets.STOCKLY_API_URL }}
           MONITORING_INGEST_SECRET: ${{ secrets.MONITORING_INGEST_SECRET }}
+          SMS_TO_API_KEY: ${{ secrets.SMS_TO_API_KEY }}
+          ALERT_PHONE_NUMBER: ${{ secrets.ALERT_PHONE_NUMBER }}
+          SMS_TO_SENDER_ID: ${{ secrets.SMS_TO_SENDER_ID }}
+          MONITORING_DASHBOARD_URL: ${{ secrets.MONITORING_DASHBOARD_URL }}
           STOCKLY_TEST_ADMIN_EMAIL: ${{ secrets.STOCKLY_TEST_ADMIN_EMAIL }}
           STOCKLY_TEST_ADMIN_PASSWORD: ${{ secrets.STOCKLY_TEST_ADMIN_PASSWORD }}
           STOCKLY_TEST_ADMIN_TOKEN: ${{ secrets.STOCKLY_TEST_ADMIN_TOKEN }}

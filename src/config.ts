@@ -2,6 +2,10 @@ interface EnvConfig {
   stocklyApiUrl: string;
   monitoringIngestSecret: string;
   monitoringReportPath: string;
+  smsToApiKey?: string;
+  alertPhoneNumber?: string;
+  smsToSenderId?: string;
+  monitoringDashboardUrl?: string;
   testAdminEmail?: string;
   testAdminPassword?: string;
   testAdminToken?: string;
@@ -34,6 +38,11 @@ export const getConfig = (): EnvConfig => {
     stocklyApiUrl,
     monitoringIngestSecret,
     monitoringReportPath,
+    smsToApiKey: optionalEnv("SMS_TO_API_KEY"),
+    alertPhoneNumber: optionalEnv("ALERT_PHONE_NUMBER"),
+    smsToSenderId: optionalEnv("SMS_TO_SENDER_ID") ?? "Stockly",
+    monitoringDashboardUrl:
+      optionalEnv("MONITORING_DASHBOARD_URL") ?? "https://stockly-il.com/admin/monitoring",
     testAdminEmail: optionalEnv("STOCKLY_TEST_ADMIN_EMAIL"),
     testAdminPassword: optionalEnv("STOCKLY_TEST_ADMIN_PASSWORD"),
     testAdminToken: optionalEnv("STOCKLY_TEST_ADMIN_TOKEN")

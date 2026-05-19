@@ -4,6 +4,7 @@ import { createHttpClient } from "./http";
 import { runApiChecks, runOptionalAuthCheck } from "./checks/apiChecks";
 import { buildReport, printSummary } from "./report";
 import { postMonitoringReport } from "./sender";
+import { sendMonitoringSms } from "./smsNotifier";
 
 const run = async (): Promise<void> => {
   const config = getConfig();
@@ -37,6 +38,12 @@ const run = async (): Promise<void> => {
     }
 
     console.log(`Report ingestion succeeded with status ${postResult.status}`);
+    await sendMonitoringSms(report, {
+      apiKey: config.smsToApiKey,
+      to: config.alertPhoneNumber,
+      senderId: config.smsToSenderId,
+      dashboardUrl: config.monitoringDashboardUrl
+    });
   } catch (error) {
     console.error("Report ingestion request failed");
     console.error(error instanceof Error ? error.message : "Unknown error");
