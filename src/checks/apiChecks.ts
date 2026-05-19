@@ -1,6 +1,10 @@
 import type { AxiosInstance } from "axios";
 import type { CheckResult, CheckStatus, CheckType } from "../types";
 
+const PRODUCTS_PATH = "/admin/monitoring/health/products";
+const SUPPLIERS_PATH = "/admin/monitoring/health/suppliers";
+const CATEGORIES_PATH = "/admin/monitoring/health/categories";
+
 const WARNING_STATUS_CODES = new Set([401, 403, 404]);
 
 const toStatus = (statusCode: number): CheckStatus => {
@@ -75,9 +79,8 @@ interface AuthInput {
   token?: string;
 }
 
-const withAuthHeader = (token?: string): { headers?: Record<string, string> } | undefined => {
-  if (!token) return undefined;
-  return { headers: { Authorization: `Bearer ${token}` } };
+const monitoringHeader = (monitoringIngestSecret: string): Record<string, string> => {
+  return { "x-monitoring-secret": monitoringIngestSecret };
 };
 
 const baseUrlFromClient = (client: AxiosInstance): string => {
@@ -100,12 +103,30 @@ const checkWithUrlLog = async (
 
 export const runApiChecks = async (
   client: AxiosInstance,
-  authInput: AuthInput
+  monitoringIngestSecret: string
 ): Promise<CheckResult[]> => {
   return Promise.all([
-    checkWithUrlLog(client, "products-list", "DATA", "/api/products", withAuthHeader(authInput.token)?.headers),
-    checkWithUrlLog(client, "suppliers-list", "DATA", "/api/suppliers", withAuthHeader(authInput.token)?.headers),
-    checkWithUrlLog(client, "categories-list", "DATA", "/api/categories", withAuthHeader(authInput.token)?.headers),
+    checkWithUrlLog(
+      client,
+      "products-list",
+      "DATA",
+      PRODUCTS_PATH,
+      monitoringHeader(monitoringIngestSecret)
+    ),
+    checkWithUrlLog(
+      client,
+      "suppliers-list",
+      "DATA",
+      SUPPLIERS_PATH,
+      monitoringHeader(monitoringIngestSecret)
+    ),
+    checkWithUrlLog(
+      client,
+      "categories-list",
+      "DATA",
+      CATEGORIES_PATH,
+      monitoringHeader(monitoringIngestSecret)
+    ),
     checkWithUrlLog(client, "dashboard-health", "API", "/health")
   ]);
 };
