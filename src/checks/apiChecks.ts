@@ -98,41 +98,11 @@ const checkWithUrlLog = async (
   });
 };
 
-const checkWithPublicFallback = async (
-  client: AxiosInstance,
-  name: string,
-  type: CheckType,
-  protectedPath: string
-): Promise<CheckResult> => {
-  const fallbackPath = "/health";
-  console.log(`Checking URL: ${baseUrlFromClient(client)}${fallbackPath}`);
-  return timedRequest(name, type, async () => {
-    const response = await client.get(fallbackPath);
-    return {
-      status: response.status,
-      data: {
-        fallback: true,
-        fallbackPath,
-        protectedPath,
-        response: response.data
-      }
-    };
-  });
-};
-
 export const runApiChecks = async (client: AxiosInstance, authInput?: AuthInput): Promise<CheckResult[]> => {
-  const hasToken = Boolean(authInput?.token);
-
   return Promise.all([
-    hasToken
-      ? checkWithUrlLog(client, "products-list", "DATA", "/api/products", authInput?.token)
-      : checkWithPublicFallback(client, "products-list", "DATA", "/api/products"),
-    hasToken
-      ? checkWithUrlLog(client, "suppliers-list", "DATA", "/api/suppliers", authInput?.token)
-      : checkWithPublicFallback(client, "suppliers-list", "DATA", "/api/suppliers"),
-    hasToken
-      ? checkWithUrlLog(client, "categories-list", "DATA", "/api/categories", authInput?.token)
-      : checkWithPublicFallback(client, "categories-list", "DATA", "/api/categories"),
+    checkWithUrlLog(client, "products-list", "DATA", "/api/products", authInput?.token),
+    checkWithUrlLog(client, "suppliers-list", "DATA", "/api/suppliers", authInput?.token),
+    checkWithUrlLog(client, "categories-list", "DATA", "/api/categories", authInput?.token),
     checkWithUrlLog(client, "dashboard-health", "API", "/health")
   ]);
 };
