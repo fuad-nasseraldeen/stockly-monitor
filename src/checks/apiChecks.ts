@@ -91,7 +91,7 @@ const checkWithUrlLog = async (
   path: string,
   token?: string
 ): Promise<CheckResult> => {
-  console.log(`Checking URL: ${baseUrlFromClient(client)}${path}`);
+  console.log(`Checking ${name}: ${baseUrlFromClient(client)}${path}`);
   return timedRequest(name, type, async () => {
     const response = await client.get(path, withAuthHeader(token));
     return { status: response.status, data: response.data };
