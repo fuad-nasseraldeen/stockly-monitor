@@ -89,20 +89,45 @@ const checkWithUrlLog = async (
   name: string,
   type: CheckType,
   path: string,
-  token?: string
+  headers?: Record<string, string>
 ): Promise<CheckResult> => {
   console.log(`Checking ${name}: ${baseUrlFromClient(client)}${path}`);
   return timedRequest(name, type, async () => {
-    const response = await client.get(path, withAuthHeader(token));
+    const response = await client.get(path, headers ? { headers } : undefined);
     return { status: response.status, data: response.data };
   });
 };
 
-export const runApiChecks = async (client: AxiosInstance, authInput?: AuthInput): Promise<CheckResult[]> => {
+const monitoringHeader = (monitoringIngestSecret: string): Record<string, string> => {
+  return { "x-monitoring-secret": monitoringIngestSecret };
+};
+
+export const runApiChecks = async (
+  client: AxiosInstance,
+  monitoringIngestSecret: string
+): Promise<CheckResult[]> => {
   return Promise.all([
-    checkWithUrlLog(client, "products-list", "DATA", "/api/products", authInput?.token),
-    checkWithUrlLog(client, "suppliers-list", "DATA", "/api/suppliers", authInput?.token),
-    checkWithUrlLog(client, "categories-list", "DATA", "/api/categories", authInput?.token),
+    checkWithUrlLog(
+      client,
+      "products-list",
+      "DATA",
+      "/admin/monitoring/health/products",
+      monitoringHeader(monitoringIngestSecret)
+    ),
+    checkWithUrlLog(
+      client,
+      "suppliers-list",
+      "DATA",
+      "/admin/monitoring/health/suppliers",
+      monitoringHeader(monitoringIngestSecret)
+    ),
+    checkWithUrlLog(
+      client,
+      "categories-list",
+      "DATA",
+      "/admin/monitoring/health/categories",
+      monitoringHeader(monitoringIngestSecret)
+    ),
     checkWithUrlLog(client, "dashboard-health", "API", "/health")
   ]);
 };

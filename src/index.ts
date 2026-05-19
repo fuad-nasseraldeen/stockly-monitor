@@ -15,7 +15,7 @@ const run = async (): Promise<void> => {
     token: config.testAdminToken
   };
 
-  const checks = await runApiChecks(client, authInput);
+  const checks = await runApiChecks(client, config.monitoringIngestSecret);
   const authCheck = await runOptionalAuthCheck(client, authInput);
 
   checks.push(authCheck);
